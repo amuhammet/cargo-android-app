@@ -1,6 +1,7 @@
 package com.example.cargo.data.repository
 
 import com.example.cargo.data.local.CargoDao
+import com.example.cargo.data.model.CourierLocation
 import com.example.cargo.data.model.Load
 import com.example.cargo.data.model.RoutePrice
 import com.example.cargo.data.model.User
@@ -13,7 +14,6 @@ class CargoRepository(
     private val cargoDao: CargoDao
 ) {
 
-    // --- KULLANICI GİRİŞ İŞLEMLERİ ---
     suspend fun login(loginRequest: Map<String, String>): Result<User> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.loginUser(loginRequest)
@@ -37,10 +37,9 @@ class CargoRepository(
         cargoDao.clearUser()
     }
 
-    // --- KURYENİN ANLIK KONUM GÜNCELLEMESİ ---
     suspend fun updateCourierLocation(lat: Double, lng: Double): Result<Void?> = withContext(Dispatchers.IO) {
         try {
-            val locationData = mapOf("latitude" to lat, "longitude" to lng)
+            val locationData = CourierLocation(latitude = lat, longitude = lng)
             val response = apiService.updateLocation(locationData)
             if (response.isSuccessful) {
                 Result.success(null)
@@ -52,7 +51,6 @@ class CargoRepository(
         }
     }
 
-    // --- ROTA VE FİYAT SORGULAMA ---
     suspend fun getRoutePrice(origin: String, destination: String): Result<RoutePrice> = withContext(Dispatchers.IO) {
         try {
             val localPrice = cargoDao.getPriceForRoute(origin, destination)
@@ -73,7 +71,6 @@ class CargoRepository(
         }
     }
 
-    // --- KARGO / YÜK CANLI TAKİP ---
     suspend fun getLoadTracking(loadId: String): Result<Load> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getLoadTracking(loadId)
