@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt' // Room veritabanı derleyicisi (kapt) için zorunludur
+apply plugin: 'kotlin-kapt' // Room veritabanı derleyicisi için zorunlu
 
 android {
     compileSdkVersion 33
@@ -21,12 +21,12 @@ android {
     }
 
     buildFeatures {
-        viewBinding true // XML arayüz dosyalarını Fragment'lara güvenli bağlamak için eklendi
+        viewBinding true // XML arayüz dosyalarını Fragment'lara bağlamak için
     }
 }
 
 dependencies {
-    // Temel AndroidX ve Tasarım Kütüphaneleri
+    // Temel AndroidX ve Tasarım Bileşenleri
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -36,17 +36,17 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
 
-    // Room Database (Yerel veri saklama ve çevrimdışı destek)
+    // Room Veritabanı (Yerel kargo verilerini ve çevrimdışı modları saklamak için)
     implementation 'androidx.room:room-runtime:2.5.0'
-    implementation 'androidx.room:room-ktx:2.5.0' // Coroutines desteği için eklendi
+    implementation 'androidx.room:room-ktx:2.5.0'
     kapt 'androidx.room:room-compiler:2.5.0'
 
-    // Retrofit & Network (API bağlantısı ve JSON dönüştürücü)
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0' // Düzeltildi
+    // Retrofit & HTTP (Backend API ile haberleşme, giriş yapma, kargo durumu güncelleme)
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0' // Ağ isteklerini loglamak için eklendi
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0' // Ağ isteklerini loglamak için
 
-    // Google Haritalar ve Konum Servisleri (Yük Takibi için eklendi)
+    // Google Haritalar ve Konum Servisleri (Kurye ve Canlı Kargo Takibi için)
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.android.gms:play-services-location:21.0.1'
 }
