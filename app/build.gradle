@@ -1,52 +1,113 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt' // Room veritabanı derleyicisi için zorunlu
-
 android {
-    compileSdkVersion 33
-
+    namespace "com.example.cargo"
+    compileSdk 35  // ✅ Android 15 desteği
+    
     defaultConfig {
         applicationId "com.example.cargo"
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdk 24
+        targetSdk 35
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
+        
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    
+    // ✅ KRITIK: Java 17 + Kotlin compatibility
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = '17'
+        // Kapt derleme kuralları
+        freeCompilerArgs += [
+            "-Xjvm-default=all",
+            "-Xallow-unstable-dependencies",
+            "-Xallow-result-return-type"
+        ]
+        // Warnings'i errors olarak dönüştürme
+        suppressWarnings = false
+    }
+    
+    // ✅ KRITIK: Room/Kapt konfigurasyonu
+    kapt {
+        correctErrorTypes = true
+        useBuildCache = true
+        
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
+            arg("room.incremental", "true")
+            arg("room.expandProjection", "true")
         }
     }
-
+    
     buildFeatures {
-        viewBinding true // XML arayüz dosyalarını Fragment'lara bağlamak için
+        compose false  // XML layouts kullanıyorsan false bırak
+        dataBinding false  // Gerekirse true yap
+        viewBinding true  // Recommended
+    }
+    
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+        }
+        
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug  // TODO: Release key store ekle
+        }
+    }
+    
+    // Test ayarları
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 }
 
+// ✅ Dependencies (Kapt ile uyumlu)
 dependencies {
-    // Temel AndroidX ve Tasarım Bileşenleri
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.android.material:material:1.9.0'
-
-    // Jetpack Navigation Component (Ekranlar arası geçiş)
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
-
-    // Room Veritabanı (Yerel kargo verilerini ve çevrimdışı modları saklamak için)
-    implementation 'androidx.room:room-runtime:2.5.0'
-    implementation 'androidx.room:room-ktx:2.5.0'
-    kapt 'androidx.room:room-compiler:2.5.0'
-
-    // Retrofit & HTTP (Backend API ile haberleşme, giriş yapma, kargo durumu güncelleme)
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0' // Ağ isteklerini loglamak için
-
-    // Google Haritalar ve Konum Servisleri (Kurye ve Canlı Kargo Takibi için)
-    implementation 'com.google.android.gms:play-services-maps:18.1.0'
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
+    // Core
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    
+    // Lifecycle
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.6'
+    
+    // Room (Kapt gerekli)
+    implementation 'androidx.room:room-runtime:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'  // ✅ Kapt configuration
+    implementation 'androidx.room:room-ktx:2.6.1'
+    
+    // Network
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+    
+    // Google Play Services (Maps/Location)
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+    
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1'
+    
+    // Hilt (Dependency Injection)
+    implementation 'com.google.dagger:hilt-android:2.51.1'
+    kapt 'com.google.dagger:hilt-compiler:2.51.1'  // ✅ Kapt
+    
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'androidx.test.ext:junit:1.2.1'
+    testImplementation 'androidx.test:runner:1.6.2'
+    testImplementation 'androidx.test:rules:1.6.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }
