@@ -9,14 +9,16 @@ on:
 jobs:
   build:
     name: Build and Test App
-    # ubuntu-latest etiketinin Ubuntu 26 geçişindeki dalgalanmalardan etkilenmemek için sürüme sabitliyoruz
     runs-on: ubuntu-24.04
+
+    # Node 20 eskime uyarılarını ve zorlamalarını tamamen bastırmak için env tanımı ekliyoruz
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # Deprecated olan v4 sürümü, Node 24 destekli v5 sürümüne yükseltildi
     - name: Set up JDK 17
       uses: actions/setup-java@v5
       with:
