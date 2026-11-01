@@ -1,6 +1,5 @@
 name: Cargo Android App CI
 
-# Hangi durumlarda bu iş akışının tetikleneceğini belirliyoruz
 on:
   push:
     branches: [ "main" ]
@@ -10,34 +9,30 @@ on:
 jobs:
   build:
     name: Build and Test App
-    runs-on: ubuntu-latest
+    # ubuntu-latest etiketinin Ubuntu 26 geçişindeki dalgalanmalardan etkilenmemek için sürüme sabitliyoruz
+    runs-on: ubuntu-24.04
 
     steps:
-    # 1. Adım: Depodaki kaynak kodları CI ortamına klonla
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # 2. Adım: Java 17 ortamını kur (Modern Android Gradle pluginleri için gereklidir)
+    # Deprecated olan v4 sürümü, Node 24 destekli v5 sürümüne yükseltildi
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
 
-    # 3. Adım: Gradle çalıştırma betiğine (gradlew) çalıştırma yetkisi ver
     - name: Grant Execute Permission for Gradlew
       run: chmod +x gradlew
 
-    # 4. Adım: Projedeki birim (Unit) testlerini koştur
     - name: Run Unit Tests
       run: ./gradlew testDebugUnitTest
 
-    # 5. Adım: Uygulamayı derle ve hata ayıklama (Debug) APK'sını üret
     - name: Build Debug APK
       run: ./gradlew assembleDebug
 
-    # 6. Adım: Üretilen APK dosyasını GitHub Actions paneline indirilebilir çıktı olarak yükle
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
