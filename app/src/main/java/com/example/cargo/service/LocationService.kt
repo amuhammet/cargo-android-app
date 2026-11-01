@@ -4,8 +4,8 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
@@ -17,7 +17,8 @@ import com.example.cargo.network.RetrofitClient
 import com.google.android.gms.location.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Cancelable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
@@ -26,7 +27,9 @@ class LocationService : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private lateinit var repository: CargoRepository
-    private val serviceScope = CoroutineScope(Dispatchers.IO)
+    
+    // Bellek sızıntılarını önlemek için SupervisorJob ile güvenli scope tanımı
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     companion object {
         private const val CHANNEL_ID = "LocationServiceChannel"
@@ -66,7 +69,17 @@ class LocationService : Service() {
             .setOngoing(true)
             .build()
 
-        startForeground(NOTIFICATION_ID, notification)
+        // Android 14+ cihazlarda arka plan konum izni çökmesini engellemek için tip belirtimi şarttır
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID, 
+                notification, 
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
+
         startLocationUpdates()
 
         return START_STICKY
@@ -91,10 +104,14 @@ class LocationService : Service() {
     private fun sendLocationToServer(lat: Double, lng: Double) {
         // Ağ isteğini ana arayüzü kilitlememesi için IO thread havuzunda koşturuyoruz
         serviceScope.launch {
-            repository.updateCourierLocation(lat, lng).onSuccess {
-                Log.d(TAG, "Koordinatlar API sunucusuna başarıyla basıldı.")
-            }.onFailure { istisna ->
-                Log.e(TAG, "Koordinat basılırken ağ hatası meydana geldi: ${istisna.localizedMessage}")
+            try {
+                repository.updateCourierLocation(lat, lng).onSuccess {
+                    Log.d(TAG, "Koordinatlar API sunucusuna başarıyla basıldı.")
+                }.onFailure { istisna ->
+                    Log.e(TAG, "Koordinat basılırken ağ hatası meydana geldi: ${istisna.localizedMessage}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "İşlem sırasında beklenmedik bir hata oluştu: ${e.message}")
             }
         }
     }
@@ -114,6 +131,7 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         fusedLocationClient.removeLocationUpdates(locationCallback)
+        serviceScope.cancel() // Servis durduğunda arka plandaki tüm asenkron istekleri güvenle iptal eder
         Log.d(TAG, "Arka plan izleme servisi kapatıldı.")
     }
 
