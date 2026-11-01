@@ -1,37 +1,122 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://android.com"
+    xmlns:app="http://android.com"
+    xmlns:tools="http://android.com"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    tools:context=".ui.dashboard.CourierDashboardFragment">
 
-    <TextView
-        android:id="@+id/tv_courier_dashboard_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Courier Dashboard"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_gravity="center"/>
-
-    <Button
-        android:id="@+id/btn_view_loads"
+    <!-- 1. BÖLÜM: AKTİF YÜK / GÖREV KARTI -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardActiveJob"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="View Loads"
-        android:layout_marginTop="16dp"/>
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#E0E0E0"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btn_pricing"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mevcut Teslimat Görevi"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorSecondary"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/textViewActiveLoadId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aktif Yük No: --"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rota: Merkez Depo -> Varış Adresi"
+                android:textSize="14sp"
+                android:textColor="#757575"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Yükü Haritada Gör / Detay Butonu -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonViewLoadDetails"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Haritada Göster ve Takip Et"
+                app:backgroundTint="?attr/colorSecondary"
+                app:cornerRadius="8dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 2. BÖLÜM: CANLI GPS KONUM PAYLAŞIM KONTROLÜ -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLocationControl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pricing"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#E0E0E0"
+        app:layout_constraintTop_toBottomOf="@id/cardActiveJob"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btn_logout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Logout"
-        android:layout_marginTop="8dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:gravity="center_horizontal">
 
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mesai ve Konum Takibi"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Durum Metni -->
+            <TextView
+                android:id="@+id/textViewServiceStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Durum: Çevrimdışı"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#757575"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Canlı Konum Paylaşımı Başlat/Durdur Butonu -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonToggleService"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Canlı Konum Paylaşımını Başlat"
+                app:backgroundTint="@android:color/holo_green_dark"
+                app:cornerRadius="8dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
