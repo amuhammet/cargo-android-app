@@ -1,34 +1,22 @@
-# ProGuard rules for the cargo Android application
-
-# Keep the application class
--keep class com.example.cargo.** { *; }
-
-# Keep all activities
--keep public class * extends android.app.Activity
--keep public class * extends androidx.fragment.app.Fragment
-
-# Keep all model classes
--keep class com.example.cargo.data.model.** { *; }
-
-# Keep all repository classes
--keep class com.example.cargo.data.repository.** { *; }
-
-# Keep all database classes
--keep class com.example.cargo.data.local.** { *; }
-
-# Keep all network service classes
--keep class com.example.cargo.network.** { *; }
-
-# Keep all utility classes
--keep class com.example.cargo.util.** { *; }
-
-# Keep all string resources
--keep class * {
-    public static <fields>;
-}
-
-# Keep annotations
+# Retrofit
+-keep class retrofit2.** { *; }
+-keepattributes Signature
 -keepattributes *Annotation*
 
-# Keep the names of classes and methods
--keepnames class * { *; }
+# OkHttp
+-keep class okhttp3.** { *; }
+
+# Room
+-keep class androidx.room.** { *; }
+-keep @androidx.room.Entity class * { *; }
+
+# Hilt
+-keep class dagger.hilt.** { *; }
+-keep class * extends dagger.hilt.android.internal.managers.ApplicationComponentManager { *; }
+
+# Keep your app's classes
+-keep class com.example.cargo.** { *; }
+-keep interface com.example.cargo.** { *; }
+
+# Google Play Services
+-keep class com.google.android.gms.** { *; }
