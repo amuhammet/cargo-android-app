@@ -1,24 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?>
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/customerDashboardFragment">
+<navigation xmlns:android="http://android.com"
+    xmlns:app="http://android.com"
+    xmlns:tools="http://android.com"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/customerLoginActivity"> <!-- Veya ortak bir karşılama ekranı -->
+
+    <activity
+        android:id="@+id/customerLoginActivity"
+        android:name="com.example.cargo.login.CustomerLoginActivity"
+        tools:layout="@layout/activity_customer_login">
+        <action
+            android:id="@+id/action_login_to_customerDashboard"
+            app:destination="@id/customerDashboardFragment" />
+    </activity>
+
+    <activity
+        android:id="@+id/courierLoginActivity"
+        android:name="com.example.cargo.login.CourierLoginActivity"
+        tools:layout="@layout/activity_courier_login">
+        <action
+            android:id="@+id/action_login_to_courierDashboard"
+            app:destination="@id/courierDashboardFragment" />
+    </activity>
 
     <fragment
         android:id="@+id/customerDashboardFragment"
         android:name="com.example.cargo.ui.dashboard.CustomerDashboardFragment"
-        android:label="Customer Dashboard"
-        tools:layout="@layout/fragment_customer_dashboard" />
+        tools:layout="@layout/fragment_customer_dashboard">
+        <action
+            android:id="@+id/action_customer_to_tracking"
+            app:destination="@id/loadTrackingFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/courierDashboardFragment"
         android:name="com.example.cargo.ui.dashboard.CourierDashboardFragment"
-        android:label="Courier Dashboard"
-        tools:layout="@layout/fragment_courier_dashboard" />
+        tools:layout="@layout/fragment_courier_dashboard">
+        <action
+            android:id="@+id/action_courier_to_tracking"
+            app:destination="@id/loadTrackingFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/loadTrackingFragment"
         android:name="com.example.cargo.ui.tracking.LoadTrackingFragment"
-        android:label="Load Tracking"
         tools:layout="@layout/fragment_load_tracking" />
 </navigation>
