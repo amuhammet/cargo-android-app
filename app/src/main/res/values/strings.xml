@@ -1,13 +1,39 @@
 <resources>
-    <string name="app_name">Cargo App</string>
-    <string name="login_customer">Customer Login</string>
-    <string name="login_courier">Courier Login</string>
-    <string name="dashboard_customer">Customer Dashboard</string>
-    <string name="dashboard_courier">Courier Dashboard</string>
-    <string name="track_load">Track Load</string>
-    <string name="route_pricing">Route Pricing</string>
-    <string name="load_tracking_info">Load Tracking Information</string>
-    <string name="welcome_message">Welcome to the Cargo App</string>
-    <string name="error_login">Login failed. Please try again.</string>
-    <string name="loading">Loading...</string>
+    <!-- Uygulama Genel Tanımlamaları -->
+    <string name="app_name">Cargo Android App</string>
+
+    <!-- Giriş Ekranları (Login) -->
+    <string name="customer_login_title">Müşteri Girişi</string>
+    <string name="courier_login_title">Kurye Girişi</string>
+    <string name="hint_email">E-posta Adresi</string>
+    <string name="hint_password">Şifre</string>
+    <string name="btn_login">Giriş Yap</string>
+    <string name="switch_to_courier">Kurye olarak mı giriş yapmak istiyorsunuz? Tıklayın</string>
+    <string name="switch_to_customer">Müşteri olarak mı giriş yapmak istiyorsunuz? Tıklayın</string>
+
+    <!-- Müşteri Paneli (Customer Dashboard) -->
+    <string name="title_route_calc">Rota Fiyatı Sorgulama</string>
+    <string name="hint_origin">Nereden (Kalkış Noktası)</string>
+    <string name="hint_destination">Nereye (Varış Noktası)</string>
+    <string name="btn_calc_price">Fiyat Hesapla</string>
+    <string name="price_result_default">Tahmini Rota Fiyatı: --</string>
+    
+    <string name="title_cargo_tracking">Kargo Takip Numarası Girişi</string>
+    <string name="hint_tracking_id">Kargo / Yük Takip Numarası</string>
+    <string name="btn_track_load">Kargoyu Takip Et</string>
+
+    <!-- Kurye Paneli (Courier Dashboard) -->
+    <string name="title_active_job">Mevcut Teslimat Görevi</string>
+    <string name="active_load_default">Aktif Yük No: --</string>
+    <string name="route_default">Rota: Merkez Depo -> Varış Adresi</string>
+    <string name="btn_show_on_map">Haritada Göster ve Takip Et</string>
+    
+    <string name="title_location_control">Mesai ve Konum Takibi</string>
+    <string name="status_offline">Durum: Çevrimdışı</string>
+    <string name="btn_start_sharing">Canlı Konum Paylaşımını Başlat</string>
+    <string name="btn_stop_sharing">Canlı Konum Paylaşımını Durdur</string>
+
+    <!-- Kargo Takip (Tracking) -->
+    <string name="tracking_load_default">Takip Edilen Kargo: --</string>
+    <string name="courier_status_moving">Kurye Durumu: Hareket Halinde</string>
 </resources>
