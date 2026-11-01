@@ -22,7 +22,7 @@ class CourierDashboardFragment : Fragment() {
     private val binding get() = _binding!!
     private var isTrackingActive = false
 
-    // Konum İzin İstemi Yönetici Mekanizması
+    // Ön konum ve bildirim izinleri onaylandığında tetiklenen mekanizma
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -30,9 +30,23 @@ class CourierDashboardFragment : Fragment() {
         val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
 
         if (fineLocationGranted || coarseLocationGranted) {
+            // Ön plan konum izinleri tamamsa, Android 10+ için arka plan iznini kontrol et
+            checkBackgroundLocationPermission()
+        } else {
+            showToast("Kurye takibi için ön plan konum izni vermeniz zorunludur.")
+        }
+    }
+
+    // Android 10+ Arka Plan Konum İzin İstemcisi
+    private val requestBackgroundPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
             toggleLocationService()
         } else {
-            showToast("Kurye takibi için konum izni vermeniz zorunludur.")
+            // Arka plan izni reddedilse bile servis ön planda (Foreground) çalışmaya devam edebilir
+            showToast("Arka plan konum izni verilmedi. Uygulama kapandığında takip kesilebilir.")
+            toggleLocationService()
         }
     }
 
@@ -48,7 +62,6 @@ class CourierDashboardFragment : Fragment() {
     override fun onViewCreated(view: View, view: Bundle?) {
         super.onViewCreated(view, view)
 
-        // Şimdilik test amaçlı statik bir yük ID'si simüle ediyoruz
         val currentLoadId = "TRK-98342"
         binding.textViewActiveLoadId.text = "Aktif Yük No: $currentLoadId"
 
@@ -66,6 +79,12 @@ class CourierDashboardFragment : Fragment() {
     }
 
     private fun checkPermissionsAndToggle() {
+        if (isTrackingActive) {
+            // Servis zaten çalışıyorsa doğrudan durdurma aşamasına geç, izin isteme
+            toggleLocationService()
+            return
+        }
+
         val permissionsToRequest = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
@@ -81,9 +100,30 @@ class CourierDashboardFragment : Fragment() {
         }
 
         if (missingPermissions.isEmpty()) {
-            toggleLocationService()
+            checkBackgroundLocationPermission()
         } else {
             requestPermissionLauncher.launch(missingPermissions.toTypedArray())
+        }
+    }
+
+    /**
+     * Android 10 (API 29) ve sonrası için cihaz kilitliyken takip yeteneğini denetler
+     */
+    private fun checkBackgroundLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val hasBackgroundPermission = ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (hasBackgroundPermission) {
+                toggleLocationService()
+            } else {
+                // Google politikaları gereği arka plan izni ayrı bir istemle talep edilmelidir
+                requestBackgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            }
+        } else {
+            toggleLocationService()
         }
     }
 
