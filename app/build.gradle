@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt' // Room veritabanı derleyicisi (kapt) için zorunludur
 
 android {
     compileSdkVersion 33
@@ -17,17 +19,34 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    buildFeatures {
+        viewBinding true // XML arayüz dosyalarını Fragment'lara güvenli bağlamak için eklendi
+    }
 }
 
 dependencies {
+    // Temel AndroidX ve Tasarım Kütüphaneleri
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.material:material:1.9.0'
+
+    // Jetpack Navigation Component (Ekranlar arası geçiş)
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+
+    // Room Database (Yerel veri saklama ve çevrimdışı destek)
     implementation 'androidx.room:room-runtime:2.5.0'
+    implementation 'androidx.room:room-ktx:2.5.0' // Coroutines desteği için eklendi
     kapt 'androidx.room:room-compiler:2.5.0'
-    implementation 'retrofit2:retrofit:2.9.0'
+
+    // Retrofit & Network (API bağlantısı ve JSON dönüştürücü)
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0' // Düzeltildi
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0' // Ağ isteklerini loglamak için eklendi
+
+    // Google Haritalar ve Konum Servisleri (Yük Takibi için eklendi)
+    implementation 'com.google.android.gms:play-services-maps:18.1.0'
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 }
