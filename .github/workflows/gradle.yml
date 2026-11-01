@@ -11,14 +11,12 @@ jobs:
     name: Build and Test App
     runs-on: ubuntu-24.04
 
-    # Node 20 eskime uyarılarını ve zorlamalarını tamamen bastırmak için env tanımı ekliyoruz
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-
     steps:
+    # Node 24 tabanlı güncel çalışma ortamına tam uyumlu sürüm
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
 
+    # Node 24 destekli güncel Java kurulum adımı
     - name: Set up JDK 17
       uses: actions/setup-java@v5
       with:
