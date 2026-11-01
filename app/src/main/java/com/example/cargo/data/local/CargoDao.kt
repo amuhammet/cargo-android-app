@@ -4,6 +4,7 @@ import androidx.room.*
 import com.example.cargo.data.model.Load
 import com.example.cargo.data.model.RoutePrice
 import com.example.cargo.data.model.User
+import com.example.cargo.data.model.CourierLocation
 
 @Dao
 interface CargoDao {
@@ -31,4 +32,11 @@ interface CargoDao {
 
     @Query("SELECT * FROM loads WHERE id = :loadId")
     suspend fun getLoadById(loadId: String): Load?
+
+    // --- Kurye Canlı Konum İşlemleri ---
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertLocation(location: CourierLocation)
+
+    @Query("SELECT * FROM courier_location WHERE id = 1")
+    suspend fun getLatestLocation(): CourierLocation?
 }
