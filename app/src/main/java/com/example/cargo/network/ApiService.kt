@@ -1,39 +1,50 @@
 package com.example.cargo.network
 
+import com.example.cargo.data.model.LocationUpdateRequest
 import com.example.cargo.data.model.RoutePrice
 import com.example.cargo.data.model.Load
-import com.example.cargo.data.model.User
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
 
-    // Kullanıcı (Müşteri veya Kurye) Girişi
-    @POST("api/auth/login")
-    suspend fun loginUser(
-        @Body loginRequest: Map<String, String>
-    ): Response<User>
-
-    // Kurye Konum Güncelleme (Az önce yazdığımız LocationService içerisinden çağrılacak)
-    @POST("api/courier/location")
+    // =================================================================================
+    // 1. Kurye Canlı Konum İşlemleri
+    // =================================================================================
+    
+    /**
+     * Kuryenin anlık GPS koordinatlarını sunucuya gönderir.
+     */
+    @POST("courier/update-location")
     suspend fun updateLocation(
-        @Body locationData: Map<String, Double> // Örn: {"latitude": 41.01, "longitude": 28.97}
+        @Body locationRequest: LocationUpdateRequest
     ): Response<Void>
 
-    // Belirli Rotalar İçin Fiyat Bilgisi Getirme
-    @GET("api/routes/price")
+    // =================================================================================
+    // 2. Rota ve Fiyatlandırma İşlemleri
+    // =================================================================================
+
+    /**
+     * Başlangıç ve bitiş noktalarına göre tahmini rota fiyatlandırma detaylarını çeker.
+     */
+    @GET("route/price")
     suspend fun getRoutePrice(
         @Query("origin") origin: String,
         @Query("destination") destination: String
-    ): Response<RoutePrice>
+    ): Response<List<RoutePrice>>
 
-    // Aktif Yük Durumu / Canlı Takip Verisi Getirme
-    @GET("api/loads/{loadId}")
-    suspend fun getLoadTracking(
-        @Path("loadId") loadId: String
+    // =================================================================================
+    // 3. Yük / Kargo Takip İşlemleri
+    // =================================================================================
+
+    /**
+     * Belirli bir kargonun (Load) durumunu ve canlı takip bilgilerini getirir.
+     */
+    @GET("load/details")
+    suspend fun getLoadDetails(
+        @Query("loadId") loadId: String
     ): Response<Load>
 }
