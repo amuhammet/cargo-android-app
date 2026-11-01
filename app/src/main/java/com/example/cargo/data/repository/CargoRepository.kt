@@ -7,7 +7,6 @@ import com.example.cargo.data.model.User
 import com.example.cargo.network.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Response
 
 class CargoRepository(
     private val apiService: ApiService,
@@ -20,7 +19,6 @@ class CargoRepository(
             val response = apiService.loginUser(loginRequest)
             if (response.isSuccessful && response.body() != null) {
                 val user = response.body()!!
-                // Giriş yapan kullanıcıyı yerel veritabanına kaydet
                 cargoDao.insertUser(user)
                 Result.success(user)
             } else {
@@ -57,17 +55,14 @@ class CargoRepository(
     // --- ROTA VE FİYAT SORGULAMA ---
     suspend fun getRoutePrice(origin: String, destination: String): Result<RoutePrice> = withContext(Dispatchers.IO) {
         try {
-            // Önce yerel veritabanına bak (Çevrimdışı destek)
             val localPrice = cargoDao.getPriceForRoute(origin, destination)
             if (localPrice != null) {
                 return@withContext Result.success(localPrice)
             }
 
-            // Yerelde yoksa sunucudan çek
             val response = apiService.getRoutePrice(origin, destination)
             if (response.isSuccessful && response.body() != null) {
                 val routePrice = response.body()!!
-                // Gelecek aramalar için yerel veritabanına önbelleğe al
                 cargoDao.insertRoutePrices(listOf(routePrice))
                 Result.success(routePrice)
             } else {
@@ -84,11 +79,9 @@ class CargoRepository(
             val response = apiService.getLoadTracking(loadId)
             if (response.isSuccessful && response.body() != null) {
                 val load = response.body()!!
-                // Takip verisini yerel veritabanında güncelle
                 cargoDao.insertLoad(load)
                 Result.success(load)
             } else {
-                // Sunucuya erişilemezse yereldeki son kargo durumunu döndür
                 val localLoad = cargoDao.getLoadById(loadId)
                 if (localLoad != null) {
                     Result.success(localLoad)
@@ -97,7 +90,6 @@ class CargoRepository(
                 }
             }
         } catch (e: Exception) {
-            // İnternet hatası durumunda yerel veriyi kontrol et
             val localLoad = cargoDao.getLoadById(loadId)
             if (localLoad != null) {
                 Result.success(localLoad)
