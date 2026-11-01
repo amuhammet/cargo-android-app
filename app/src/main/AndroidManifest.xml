@@ -1,6 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.cargo">
 
+    <!-- Ağ ve İnternet İzinleri -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Konum İzinleri (Yük ve Kurye Takibi İçin) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- Kurye arka planda konum göndermeye devam edebilsin diye (Android 10+) -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -8,19 +21,37 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Cargo">
-        <activity android:name=".MainActivity">
+
+        <!-- Google Maps API Anahtarı (Haritada kargo yerini göstermek için gereklidir) -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE" />
+
+        <!-- Ana Ekran (Giriş noktası) -->
+        <activity 
+            android:name=".MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".login.CustomerLoginActivity" />
-        <activity android:name=".login.CourierLoginActivity" />
-        <activity android:name=".ui.dashboard.CustomerDashboardFragment" />
-        <activity android:name=".ui.dashboard.CourierDashboardFragment" />
-        <activity android:name=".ui.tracking.LoadTrackingFragment" />
-    </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        <!-- Login Ekranları -->
+        <activity 
+            android:name=".login.CustomerLoginActivity"
+            android:exported="false" />
+            
+        <activity 
+            android:name=".login.CourierLoginActivity"
+            android:exported="false" />
+
+        <!-- Kuryenin anlık konumunu backend'e basacak arka plan servisi -->
+        <service
+            android:name=".service.LocationService"
+            android:foregroundServiceType="location"
+            android:enabled="true"
+            android:exported="false" />
+
+    </application>
 </manifest>
