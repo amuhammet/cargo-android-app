@@ -1,47 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://android.com"
     xmlns:app="http://android.com"
     xmlns:tools="http://android.com"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/customerLoginActivity"> <!-- Veya ortak bir karşılama ekranı -->
+    app:startDestination="@id/customerLoginActivity">
 
+    <!-- 1. Müşteri Giriş Ekranı (Başlangıç Noktası) -->
     <activity
         android:id="@+id/customerLoginActivity"
         android:name="com.example.cargo.login.CustomerLoginActivity"
+        android:label="Müşteri Girişi"
         tools:layout="@layout/activity_customer_login">
+        <!-- Kurye Girişine Geçiş Eylemi -->
         <action
-            android:id="@+id/action_login_to_customerDashboard"
-            app:destination="@id/customerDashboardFragment" />
+            android:id="@+id/action_customerLogin_to_courierLogin"
+            app:destination="@id/courierLoginActivity"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/customerLoginActivity"
+            app:popUpToInclusive="true" />
+        <!-- Müşteri Paneline Geçiş Eylemi -->
+        <action
+            android:id="@+id/action_customerLogin_to_customerDashboard"
+            app:destination="@id/customerDashboardFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </activity>
 
+    <!-- 2. Kurye Giriş Ekranı -->
     <activity
         android:id="@+id/courierLoginActivity"
         android:name="com.example.cargo.login.CourierLoginActivity"
+        android:label="Kurye Girişi"
         tools:layout="@layout/activity_courier_login">
+        <!-- Müşteri Girişine Geri Dönüş Eylemi -->
         <action
-            android:id="@+id/action_login_to_courierDashboard"
-            app:destination="@id/courierDashboardFragment" />
+            android:id="@+id/action_courierLogin_to_customerLogin"
+            app:destination="@id/customerLoginActivity"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/courierLoginActivity"
+            app:popUpToInclusive="true" />
+        <!-- Kurye Paneline Geçiş Eylemi -->
+        <action
+            android:id="@+id/action_courierLogin_to_courierDashboard"
+            app:destination="@id/courierDashboardFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </activity>
 
+    <!-- 3. Müşteri Ana Paneli -->
     <fragment
         android:id="@+id/customerDashboardFragment"
         android:name="com.example.cargo.ui.dashboard.CustomerDashboardFragment"
+        android:label="Müşteri Paneli"
         tools:layout="@layout/fragment_customer_dashboard">
+        <!-- Canlı Yük Takibine Geçiş Eylemi -->
         <action
-            android:id="@+id/action_customer_to_tracking"
+            android:id="@+id/action_customerDashboard_to_loadTracking"
             app:destination="@id/loadTrackingFragment" />
     </fragment>
 
+    <!-- 4. Kurye Ana Paneli -->
     <fragment
         android:id="@+id/courierDashboardFragment"
         android:name="com.example.cargo.ui.dashboard.CourierDashboardFragment"
+        android:label="Kurye Paneli"
         tools:layout="@layout/fragment_courier_dashboard">
+        <!-- Canlı Yük Takibine Geçiş Eylemi -->
         <action
-            android:id="@+id/action_courier_to_tracking"
+            android:id="@+id/action_courierDashboard_to_loadTracking"
             app:destination="@id/loadTrackingFragment" />
     </fragment>
 
+    <!-- 5. Canlı Kargo / Yük Takip Ekranı -->
     <fragment
         android:id="@+id/loadTrackingFragment"
         android:name="com.example.cargo.ui.tracking.LoadTrackingFragment"
-        tools:layout="@layout/fragment_load_tracking" />
+        android:label="Kargo Takibi"
+        tools:layout="@layout/fragment_load_tracking">
+        <!-- Hangi kargonun takip edileceğini güvenli taşımak için argüman -->
+        <argument
+            android:name="loadId"
+            app:argType="string"
+            android:defaultValue='""' />
+    </fragment>
+
 </navigation>
