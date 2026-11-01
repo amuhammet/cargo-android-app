@@ -1,84 +1,73 @@
-# Cargo Android App
+# Cargo Android Application 🚚
 
-## Overview
-The Cargo Android App is designed to facilitate the management of cargo services, providing features for both couriers and customers. Users can log in, view pricing for specific routes, and track their loads in real-time.
+Bu proje, kuryeler ve müşteriler için geliştirilmiş, gerçek zamanlı yük takip ve lojistik yönetimini sağlayan modern bir Android uygulamasıdır. MVVM mimari deseni, Jetpack bileşenleri ve kararlı arka plan konum servisleri kullanılarak inşa edilmiştir.
 
-## Features
-- **Courier and Customer Login**: Separate login activities for couriers and customers to ensure secure access.
-- **Pricing for Specific Routes**: Users can view pricing information based on selected routes.
-- **Load Tracking**: Real-time tracking of cargo loads to keep users informed about their shipments.
+## 🚀 Öne Çıkan Özellikler
 
-## Project Structure
-```
-cargo-android-app
-├── app
-│   ├── src
-│   │   ├── main
-│   │   │   ├── AndroidManifest.xml
-│   │   │   ├── java
-│   │   │   │   └── com
-│   │   │   │       └── example
-│   │   │   │           └── cargo
-│   │   │   │               ├── MainActivity.kt
-│   │   │   │               ├── login
-│   │   │   │               │   ├── CustomerLoginActivity.kt
-│   │   │   │               │   └── CourierLoginActivity.kt
-│   │   │   │               ├── ui
-│   │   │   │               │   ├── dashboard
-│   │   │   │               │   │   ├── CustomerDashboardFragment.kt
-│   │   │   │               │   │   └── CourierDashboardFragment.kt
-│   │   │   │               │   └── tracking
-│   │   │   │               │       └── LoadTrackingFragment.kt
-│   │   │   │               ├── data
-│   │   │   │               │   ├── model
-│   │   │   │               │   │   ├── RoutePrice.kt
-│   │   │   │               │   │   ├── Load.kt
-│   │   │   │               │   │   └── User.kt
-│   │   │   │               │   ├── repository
-│   │   │   │               │   │   └── CargoRepository.kt
-│   │   │   │               │   └── local
-│   │   │   │               │       └── AppDatabase.kt
-│   │   │   │               ├── network
-│   │   │   │               │   └── ApiService.kt
-│   │   │   │               └── util
-│   │   │   │                   └── Extensions.kt
-│   │   │   ├── res
-│   │   │   │   ├── layout
-│   │   │   │   │   ├── activity_main.xml
-│   │   │   │   │   ├── activity_customer_login.xml
-│   │   │   │   │   ├── activity_courier_login.xml
-│   │   │   │   │   ├── fragment_customer_dashboard.xml
-│   │   │   │   │   ├── fragment_courier_dashboard.xml
-│   │   │   │   │   └── fragment_load_tracking.xml
-│   │   │   │   ├── values
-│   │   │   │   │   ├── strings.xml
-│   │   │   │   │   └── colors.xml
-│   │   │   │   └── navigation
-│   │   │   │       └── nav_graph.xml
-│   │   ├── androidTest
-│   │   └── test
-│   ├── build.gradle
-│   └── proguard-rules.pro
-├── build.gradle
-├── settings.gradle
-├── gradle.properties
-├── gradle
-│   └── wrapper
-│       └── gradle-wrapper.properties
-├── .gitignore
-└── README.md
+### Müşteri Paneli (Customer Dashboard)
+* **Rota Fiyatı Sorgulama:** Başlangıç ve varış noktalarına göre tahmini taşıma bedellerini anlık olarak hesaplar ve Room veritabanında önbelleğe alır.
+* **Canlı Kargo Takibi (Safe Args):** Kargo takip numarası girildiğinde, kuryenin harita üzerindeki hareketlerini 5 saniyede bir senkronize ederek akıcı bir şekilde gösterir.
+
+### Kurye Paneli (Courier Dashboard)
+* **Gelişmiş İzin Yönetimi:** Android 13+ (Bildirim İzni) ve Android 10+ (Arka Plan Konum İzni) standartlarına tam uyumlu dinamik runtime izin kontrolü.
+* **Arka Plan Konum Servisi (Foreground Service):** Kurye uygulamayı kapatsa veya ekranı kilitlese dahi, `FOREGROUND_SERVICE_LOCATION` tipiyle entegre çalışarak sunucuya koordinat basmaya devam eder.
+
+---
+
+## 🛠️ Kullanılan Teknolojiler ve Mimari Yapı
+
+Application mimarisi **Clean Architecture** prensiplerine ve **Single Source of Truth (Tek Doğru Kaynak)** yaklaşımına dayanmaktadır.
+
+* **Kotlin Coroutines & Flow:** Asenkron veri akışları ve arka plan iş parçacığı yönetimi.
+* **Jetpack Navigation & Safe Args:** Fragment'lar arası güvenli veri transferi ve tip güvenli rota yönetimi.
+* **Retrofit & OkHttp:** Sunucu (Backend) entegrasyonu ve ağ hatalarını izlemek için `Logging Interceptor`.
+* **Room Database:** Çevrimdışı (Offline-first) çalışma desteği için yerel veri tabanı önbellekleme katmanı.
+* **Google Play Services (Maps & Location):** `FusedLocationProviderClient` ile batarya dostu, yüksek hassasiyetli canlı konum tespiti.
+
+---
+
+## 📁 Proje Klasör Yapısı
+
+```text
+app/src/main/java/com/example/cargo/
+│
+├── data/
+│   ├── local/          # AppDatabase, CargoDao (Room konfigürasyonu)
+│   ├── model/          # CourierLocation, Load, RoutePrice, User (Veri Modelleri)
+│   └── repository/     # CargoRepository (Ağ ve yerel veritabanı yönetim merkezi)
+│
+├── network/            # ApiService (Retrofit Uç Noktaları), RetrofitClient
+│
+├── service/            # LocationService (Arka Plan Foreground Konum Takip Servisi)
+│
+├── ui/
+│   ├── dashboard/      # CustomerDashboardFragment, CourierDashboardFragment
+│   ├── login/          # CustomerLoginActivity, CourierLoginActivity
+│   └── tracking/       # LoadTrackingFragment (Google Maps Entegrasyonu)
+│
+└── util/               # Uzantı fonksiyonları (showToast vb.)
 ```
 
-## Getting Started
-1. Clone the repository.
-2. Open the project in your preferred IDE.
-3. Build and run the application on an Android device or emulator.
+---
 
-## Dependencies
-- Kotlin
-- AndroidX libraries
-- Retrofit for network operations
-- Room for local database management
+## ⚙️ Kurulum ve Çalıştırma
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+### 1. Google Maps API Anahtarını Ekleme
+Projenin harita fonksiyonlarının çalışabilmesi için geçerli bir Google Maps API anahtarına ihtiyacı vardır. `app/src/main/AndroidManifest.xml` dosyasındaki aşağıdaki alanı güncelleyin:
+
+```xml
+<meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="BURAYA_API_ANAHTARINIZI_YAZIN" />
+```
+
+### 2. CI/CD İş Akışı (GitHub Actions)
+Projede otomatik derleme ve test süreçlerini yöneten bir CI/CD hattı (`.github/workflows/gradle.yml`) tanımlıdır. Ana (`main`) dala gönderilen her kod veya açılan her Pull Request otomatik olarak:
+1. Java 17 ortamında ilklendirilir.
+2. Birim (Unit) testlerinden geçer (`./gradlew testDebugUnitTest`).
+3. Başarıyla derlenerek test edilebilir bir `app-debug.apk` çıktısı üretir.
+
+---
+
+## 🔒 Güvenlik ve İzin Standartları
+Uygulama, Google Play Store'un en güncel konum politikalarına uygundur. Konum takibi esnasında bildirim çubuğunda kuryeye açıkça bilgi gösterilir ve kurye dilediği an **"Canlı Konum Paylaşımını Durdur"** butonuyla servisi tamamen sonlandırabilir.
