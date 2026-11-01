@@ -1,32 +1,41 @@
 package com.example.cargo.data.local
 
 import android.content.Context
-import androidx.room.*
-import com.example.cargo.data.model.*
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.cargo.data.model.Load
+import com.example.cargo.data.model.RoutePrice
+import com.example.cargo.data.model.User
 
-@Database(entities = [User::class, Load::class, RoutePrice::class], version = 1, exportSchema = false)
-@TypeConverters(Converters::class)
+@Database(
+    entities = [User::class, RoutePrice::class, Load::class], 
+    version = 1, 
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun userDao(): UserDao
-    abstract fun loadDao(): LoadDao
-    abstract fun routePriceDao(): RoutePriceDao
+
+    abstract fun cargoDao(): CargoDao
 
     companion object {
-        @Volatile private var INSTANCE: AppDatabase? = null
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
         fun getDatabase(context: Context): AppDatabase {
+            // Eğer veritabanı daha önce oluşturulmuşsa mevcut olanı döndür, yoksa sıfırdan oluştur
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    AppDatabase::class.java, "cargo_database"
-                ).build()
+                    AppDatabase::class.java,
+                    "cargo_database"
+                )
+                // Versiyon değişikliklerinde verilerin güvenli bir şekilde sıfırlanıp yeniden kurulması için
+                .fallbackToDestructiveMigration() 
+                .build()
+                
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
-
-// Basit DAO tanımlamaları (Eksik kalmaması için)
-@Dao interface UserDao { @Query("SELECT * FROM users") suspend fun getAll(): List<User> }
-@Dao interface LoadDao { @Query("SELECT * FROM loads") suspend fun getAll(): List<Load> }
-@Dao interface RoutePriceDao { @Query("SELECT * FROM route_prices") suspend fun getAll(): List<RoutePrice> }
