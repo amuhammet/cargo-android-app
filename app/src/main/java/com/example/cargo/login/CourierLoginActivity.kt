@@ -2,49 +2,49 @@ package com.example.cargo.login
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.cargo.R
-import com.example.cargo.ui.dashboard.CourierDashboardFragment
+import com.example.cargo.MainActivity
+import com.example.cargo.databinding.ActivityCourierLoginBinding
+import com.example.cargo.util.showToast
+import com.example.cargo.util.isValidEmail
 
 class CourierLoginActivity : AppCompatActivity() {
 
-    private lateinit var usernameEditText: EditText
-    private lateinit var passwordEditText: EditText
-    private lateinit var loginButton: Button
+    private lateinit var binding: ActivityCourierLoginBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_courier_login)
+        binding = ActivityCourierLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        usernameEditText = findViewById(R.id.usernameEditText)
-        passwordEditText = findViewById(R.id.passwordEditText)
-        loginButton = findViewById(R.id.loginButton)
+        // Giriş Butonu Tıklama Etkinliği
+        binding.buttonCourierLogin.setOnClickListener {
+            val email = binding.editTextCourierEmail.text.toString().trim()
+            val password = binding.editTextCourierPassword.text.toString().trim()
 
-        loginButton.setOnClickListener {
-            loginCourier()
+            if (email.isEmpty() || password.isEmpty()) {
+                showToast("Lütfen tüm alanları doldurun.")
+                return@setOnClickListener
+            }
+
+            if (!email.isValidEmail()) {
+                showToast("Geçersiz e-posta adresi.")
+                return@setOnClickListener
+            }
+
+            // TODO: CargoRepository üzerinden API girişi tetiklenecek.
+            // Şimdilik simüle ederek ana akışa (Dashboard) yönlendiriyoruz.
+            showToast("Kurye girişi başarılı!")
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
         }
-    }
 
-    private fun loginCourier() {
-        val username = usernameEditText.text.toString()
-        val password = passwordEditText.text.toString()
-
-        if (username.isNotEmpty() && password.isNotEmpty()) {
-            // Here you would typically validate the credentials with a backend service
-            // For demonstration, we assume the login is successful
-            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
-            navigateToDashboard()
-        } else {
-            Toast.makeText(this, "Please enter both username and password", Toast.LENGTH_SHORT).show()
+        // Müşteri Giriş Ekranına Geçiş Butonu
+        binding.textViewSwitchToCustomer.setOnClickListener {
+            val intent = Intent(this, CustomerLoginActivity::class.java)
+            startActivity(intent)
+            finish()
         }
-    }
-
-    private fun navigateToDashboard() {
-        val intent = Intent(this, CourierDashboardFragment::class.java)
-        startActivity(intent)
-        finish()
     }
 }
