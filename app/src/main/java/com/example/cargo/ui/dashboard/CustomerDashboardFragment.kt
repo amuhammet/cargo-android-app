@@ -23,10 +23,9 @@ class CustomerDashboardFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, view: ViewCreatedCreated) {
-        super.onViewCreated(view, view)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // 1. Seçenek: Rota Fiyatı Sorgulama Butonu Etkinliği
         binding.buttonCalculatePrice.setOnClickListener {
             val origin = binding.editTextOrigin.text.toString().trim()
             val destination = binding.editTextDestination.text.toString().trim()
@@ -36,13 +35,10 @@ class CustomerDashboardFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // TODO: CargoRepository aracılığıyla ApiService üzerinden fiyat sorgulanacak.
-            // Şimdilik simüle bir fiyat çıktısı gösteriyoruz.
             val simulatedPrice = (150..500).random()
             binding.textViewPriceResult.text = "Tahmini Rota Fiyatı: $simulatedPrice TRY"
         }
 
-        // 2. Seçenek: Kargo Takip Numarası Giriş Butonu Etkinliği
         binding.buttonTrackLoad.setOnClickListener {
             val trackingId = binding.editTextTrackingId.text.toString().trim()
 
@@ -51,7 +47,6 @@ class CustomerDashboardFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // Güvenli argüman (Safe Args) kullanarak takip numarasını takip ekranına aktarıyoruz
             val action = CustomerDashboardFragmentDirections
                 .actionCustomerDashboardToLoadTracking(trackingId)
             findNavController().navigate(action)
