@@ -71,6 +71,15 @@ class CargoRepository(
         }
     }
 
+    suspend fun getLatestLocationFromLocal(): CourierLocation? = withContext(Dispatchers.IO) {
+        cargoDao.getLatestLocation()
+    }
+
+    suspend fun trackLoad(loadId: String): Load? = withContext(Dispatchers.IO) {
+        val result = getLoadTracking(loadId)
+        result.getOrNull()
+    }
+
     suspend fun getLoadTracking(loadId: String): Result<Load> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getLoadTracking(loadId)
