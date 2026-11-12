@@ -6,6 +6,8 @@ import com.example.cargo.data.model.Load
 import com.example.cargo.data.model.RoutePrice
 import com.example.cargo.data.model.User
 import com.example.cargo.network.ApiService
+import com.google.gson.JsonParser
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -20,25 +22,49 @@ class CargoRepository(
                 val response = apiService.loginUser(
                     mapOf("email" to email, "password" to password, "role" to expectedRole)
                 )
-                val user = response.body()
                 if (!response.isSuccessful) {
+                    val serverMessage = response.errorBody()?.string()?.let(::extractServerMessage)
                     return@withContext Result.failure(
-                        Exception("Giriş başarısız (HTTP ${response.code()}). E-posta veya şifrenizi kontrol edin.")
+                        Exception(serverMessage ?: "Giriş başarısız (HTTP ${response.code()}). E-posta veya şifrenizi kontrol edin.")
                     )
                 }
-                if (user == null) {
-                    return@withContext Result.failure(Exception("Sunucu boş kullanıcı yanıtı döndürdü."))
+
+                val user = response.body()
+                    ?: return@withContext Result.failure(Exception("Sunucu boş kullanıcı yanıtı döndürdü."))
+
+                if (user.id.isBlank() || user.email.isBlank() || user.role.isBlank()) {
+                    return@withContext Result.failure(Exception("Sunucu yanıtı kullanıcı bilgilerini içermiyor."))
                 }
                 if (!user.role.equals(expectedRole, ignoreCase = true)) {
-                    return@withContext Result.failure(Exception("Bu hesap ${expectedRole.lowercase()} girişi için yetkili değil."))
+                    return@withContext Result.failure(
+                        Exception("Bu hesap ${expectedRole.lowercase()} girişi için yetkili değil.")
+                    )
                 }
+
                 cargoDao.clearUser()
                 cargoDao.insertUser(user)
                 Result.success(user)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Result.failure(e)
             }
         }
+
+    private fun extractServerMessage(body: String): String? {
+        if (body.isBlank()) return null
+        return runCatching {
+            val json = JsonParser.parseString(body)
+            if (!json.isJsonObject) return@runCatching null
+            val objectValue = json.asJsonObject
+            listOf("message", "error", "detail").firstNotNullOfOrNull { key ->
+                objectValue.get(key)
+                    ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }
+                    ?.asString
+                    ?.takeIf(String::isNotBlank)
+            }
+        }.getOrNull()
+    }
 
     suspend fun getLocalUser(): User? = withContext(Dispatchers.IO) {
         cargoDao.LoggedInUser()
@@ -57,6 +83,8 @@ class CargoRepository(
             } else {
                 Result.failure(Exception("Konum sunucuya gönderilemedi: ${response.message()}"))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -78,6 +106,8 @@ class CargoRepository(
             } else {
                 Result.failure(Exception("Fiyat bilgisi alınamadı: ${response.message()}"))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -98,6 +128,8 @@ class CargoRepository(
                     Result.failure(Exception("Kargo bulunamadı: ${response.message()}"))
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             val localLoad = cargoDao.getLoadById(loadId)
             if (localLoad != null) {

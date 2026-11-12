@@ -2,6 +2,7 @@ package com.example.cargo.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.cargo.MainActivity
@@ -39,16 +40,19 @@ class CourierLoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            binding.buttonCourierLogin.isEnabled = false
+            setLoading(true)
             lifecycleScope.launch {
-                val result = repository.login(email, password, ROLE_COURIER)
-                binding.buttonCourierLogin.isEnabled = true
-                result.onSuccess {
-                    showToast("Giriş başarılı.")
-                    startActivity(Intent(this@CourierLoginActivity, MainActivity::class.java))
-                    finish()
-                }.onFailure { error ->
-                    showToast(error.message ?: "Giriş yapılamadı. Sunucu bağlantınızı kontrol edin.")
+                try {
+                    val result = repository.login(email, password, ROLE_COURIER)
+                    result.onSuccess {
+                        showToast("Giriş başarılı.")
+                        startActivity(Intent(this@CourierLoginActivity, MainActivity::class.java))
+                        finish()
+                    }.onFailure { error ->
+                        showToast(error.message ?: "Giriş yapılamadı. Sunucu bağlantınızı kontrol edin.")
+                    }
+                } finally {
+                    if (!isFinishing) setLoading(false)
                 }
             }
         }
@@ -57,6 +61,12 @@ class CourierLoginActivity : AppCompatActivity() {
             startActivity(Intent(this, CustomerLoginActivity::class.java))
             finish()
         }
+    }
+
+    private fun setLoading(loading: Boolean) {
+        binding.buttonCourierLogin.isEnabled = !loading
+        binding.textViewSwitchToCustomer.isEnabled = !loading
+        binding.progressLogin.visibility = if (loading) View.VISIBLE else View.GONE
     }
 
     private companion object {
