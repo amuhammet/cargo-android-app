@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
-    xmlns:android="http://android.com"
-    xmlns:app="http://android.com"
-    xmlns:tools="http://android.com"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
     tools:context=".login.CustomerLoginActivity">
 
-    <!-- Hoş Geldiniz Logosu / İkonu Görsel Alanı -->
     <ImageView
         android:id="@+id/imageViewCustomerLogo"
         android:layout_width="100dp"
@@ -20,7 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Ekran Başlığı -->
     <TextView
         android:id="@+id/textViewCustomerTitle"
         android:layout_width="wrap_content"
@@ -34,17 +32,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- E-posta Girdi Alanı -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputLayoutCustomerEmail"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:hint="E-posta Adresi"
         app:startIconDrawable="@android:drawable/ic_dialog_email"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         app:layout_constraintTop_toBottomOf="@id/textViewCustomerTitle">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextCustomerEmail"
             android:layout_width="match_parent"
@@ -52,18 +48,16 @@
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Şifre Girdi Alanı -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputLayoutCustomerPassword"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:hint="Şifre"
         app:startIconDrawable="@android:drawable/ic_lock_lock"
         app:passwordToggleEnabled="true"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         app:layout_constraintTop_toBottomOf="@id/inputLayoutCustomerEmail">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextCustomerPassword"
             android:layout_width="match_parent"
@@ -71,7 +65,6 @@
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Giriş Butonu -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonCustomerLogin"
         android:layout_width="match_parent"
@@ -82,7 +75,6 @@
         app:cornerRadius="8dp"
         app:layout_constraintTop_toBottomOf="@id/inputLayoutCustomerPassword" />
 
-    <!-- Kurye Girişine Geçiş Butonu -->
     <TextView
         android:id="@+id/textViewSwitchToCourier"
         android:layout_width="wrap_content"
@@ -96,5 +88,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

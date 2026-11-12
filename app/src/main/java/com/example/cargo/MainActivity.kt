@@ -1,46 +1,67 @@
 package com.example.cargo
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.example.cargo.data.local.AppDatabase
+import com.example.cargo.data.model.User
 import com.example.cargo.databinding.ActivityMainBinding
+import com.example.cargo.login.CustomerLoginActivity
+import com.example.cargo.ui.dashboard.CourierDashboardFragment
+import com.example.cargo.ui.dashboard.CustomerDashboardFragment
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // ViewBinding kurulumu
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Toolbar'ı uygulamanın ActionBar'ı olarak ayarla
         setSupportActionBar(binding.toolbar)
 
-        // NavHostFragment üzerinden NavController erişimi
+        lifecycleScope.launch {
+            val user = AppDatabase.getDatabase(applicationContext).cargoDao().LoggedInUser()
+            if (user == null || user.role.uppercase(Locale.ROOT) !in setOf("CUSTOMER", "COURIER")) {
+                startActivity(Intent(this@MainActivity, CustomerLoginActivity::class.java))
+                finish()
+                return@launch
+            }
+            showDashboard(user)
+        }
+    }
+
+    private fun showDashboard(user: User) {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
+        val graph = navController.navInflater.inflate(R.navigation.nav_graph)
+        graph.setStartDestination(
+            if (user.role.equals("COURIER", ignoreCase = true)) {
+                R.id.courierDashboardFragment
+            } else {
+                R.id.customerDashboardFragment
+            }
+        )
+        navController.graph = graph
 
-        // Geri butonunun hangi ekranlarda çıkmayacağını (Ana ekranlar) belirle
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-
-        // ActionBar'ı Jetpack Navigation ile bağla (Başlıklar otomatik güncellenir)
+        appBarConfiguration = AppBarConfiguration(
+            setOf(R.id.customerDashboardFragment, R.id.courierDashboardFragment)
+        )
         setupActionBarWithNavController(navController, appBarConfiguration)
     }
 
-    /**
-     * Sol üstteki geri (up) butonuna basıldığında NavGraph akışına göre geri gidilmesini sağlar.
-     */
     override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        return ::navController.isInitialized &&
+            (navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp())
     }
 }

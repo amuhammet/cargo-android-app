@@ -14,20 +14,31 @@ class CargoRepository(
     private val cargoDao: CargoDao
 ) {
 
-    suspend fun login(loginRequest: Map<String, String>): Result<User> = withContext(Dispatchers.IO) {
-        try {
-            val response = apiService.loginUser(loginRequest)
-            if (response.isSuccessful && response.body() != null) {
-                val user = response.body()!!
+    suspend fun login(email: String, password: String, expectedRole: String): Result<User> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.loginUser(
+                    mapOf("email" to email, "password" to password, "role" to expectedRole)
+                )
+                val user = response.body()
+                if (!response.isSuccessful) {
+                    return@withContext Result.failure(
+                        Exception("Giriş başarısız (HTTP ${response.code()}). E-posta veya şifrenizi kontrol edin.")
+                    )
+                }
+                if (user == null) {
+                    return@withContext Result.failure(Exception("Sunucu boş kullanıcı yanıtı döndürdü."))
+                }
+                if (!user.role.equals(expectedRole, ignoreCase = true)) {
+                    return@withContext Result.failure(Exception("Bu hesap ${expectedRole.lowercase()} girişi için yetkili değil."))
+                }
+                cargoDao.clearUser()
                 cargoDao.insertUser(user)
                 Result.success(user)
-            } else {
-                Result.failure(Exception("Giriş başarısız: ${response.message()}"))
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
-    }
 
     suspend fun getLocalUser(): User? = withContext(Dispatchers.IO) {
         cargoDao.LoggedInUser()
@@ -59,9 +70,10 @@ class CargoRepository(
             }
 
             val response = apiService.getRoutePrice(origin, destination)
-            if (response.isSuccessful && response.body() != null) {
-                val routePrice = response.body()!!
-                cargoDao.insertRoutePrices(listOf(routePrice))
+            val routePrices = response.body()
+            if (response.isSuccessful && !routePrices.isNullOrEmpty()) {
+                val routePrice = routePrices.first()
+                cargoDao.insertRoutePrices(routePrices)
                 Result.success(routePrice)
             } else {
                 Result.failure(Exception("Fiyat bilgisi alınamadı: ${response.message()}"))
