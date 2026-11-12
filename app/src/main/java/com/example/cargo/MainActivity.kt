@@ -13,8 +13,6 @@ import com.example.cargo.data.local.AppDatabase
 import com.example.cargo.data.model.User
 import com.example.cargo.databinding.ActivityMainBinding
 import com.example.cargo.login.CustomerLoginActivity
-import com.example.cargo.ui.dashboard.CourierDashboardFragment
-import com.example.cargo.ui.dashboard.CustomerDashboardFragment
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -41,8 +39,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDashboard(user: User) {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+            ?: return
+
         navController = navHostFragment.navController
         val graph = navController.navInflater.inflate(R.navigation.nav_graph)
         graph.setStartDestination(
