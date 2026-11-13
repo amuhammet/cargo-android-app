@@ -54,3 +54,101 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPostalAddress" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Varış Noktası -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Nereye (Varış Noktası)"
+                    android:layout_marginBottom="16dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextDestination"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPostalAddress" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Hesapla Butonu -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonCalculatePrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="Fiyat Hesapla"
+                    app:cornerRadius="8dp" />
+
+                <!-- Sonuç Gösterim Alanı -->
+                <TextView
+                    android:id="@+id/textViewPriceResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:text="Tahmini Rota Fiyatı: --"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 2. BÖLÜM: KARGO TAKİP NUMARASI GİRİŞ SEÇENEĞİ -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardCargoTracking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E0E0E0"
+            app:layout_constraintTop_toBottomOf="@id/cardRouteCalculation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kargo Takip Numarası Girişi"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorPrimary"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Takip No Giriş Alanı -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Kargo / Yük Takip Numarası"
+                    android:layout_marginBottom="16dp"
+                    app:startIconDrawable="@android:drawable/ic_menu_search"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextTrackingId"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapCharacters" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Takip Et Butonu -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonTrackLoad"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="Kargoyu Takip Et"
+                    app:backgroundTint="?attr/colorSecondary"
+                    app:cornerRadius="8dp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
