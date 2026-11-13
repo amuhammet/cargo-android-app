@@ -53,8 +53,7 @@ class MainActivity : AppCompatActivity() {
         navController.graph = graph
 
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.customerDashboardFragment, R.id.courierDashboardFragment),
-            binding.drawerLayout
+            setOf(R.id.customerDashboardFragment, R.id.courierDashboardFragment)
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
     }
