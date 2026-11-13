@@ -6,8 +6,6 @@ import com.example.cargo.data.model.Load
 import com.example.cargo.data.model.RoutePrice
 import com.example.cargo.data.model.User
 import com.example.cargo.network.ApiService
-import com.google.gson.JsonParser
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -16,54 +14,19 @@ class CargoRepository(
     private val cargoDao: CargoDao
 ) {
 
-    suspend fun login(email: String, password: String, expectedRole: String): Result<User> =
-        withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.loginUser(
-                    mapOf("email" to email, "password" to password, "role" to expectedRole)
-                )
-                if (!response.isSuccessful) {
-                    val serverMessage = response.errorBody()?.string()?.let(::extractServerMessage)
-                    return@withContext Result.failure(
-                        Exception(serverMessage ?: "Giriş başarısız (HTTP ${response.code()}). E-posta veya şifrenizi kontrol edin.")
-                    )
-                }
-
-                val user = response.body()
-                    ?: return@withContext Result.failure(Exception("Sunucu boş kullanıcı yanıtı döndürdü."))
-
-                if (user.id.isBlank() || user.email.isBlank() || user.role.isBlank()) {
-                    return@withContext Result.failure(Exception("Sunucu yanıtı kullanıcı bilgilerini içermiyor."))
-                }
-                if (!user.role.equals(expectedRole, ignoreCase = true)) {
-                    return@withContext Result.failure(
-                        Exception("Bu hesap ${expectedRole.lowercase()} girişi için yetkili değil.")
-                    )
-                }
-
-                cargoDao.clearUser()
+    suspend fun login(loginRequest: Map<String, String>): Result<User> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.loginUser(loginRequest)
+            if (response.isSuccessful && response.body() != null) {
+                val user = response.body()!!
                 cargoDao.insertUser(user)
                 Result.success(user)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Result.failure(e)
+            } else {
+                Result.failure(Exception("Giriş başarısız: ${response.message()}"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-
-    private fun extractServerMessage(body: String): String? {
-        if (body.isBlank()) return null
-        return runCatching {
-            val json = JsonParser.parseString(body)
-            if (!json.isJsonObject) return@runCatching null
-            val objectValue = json.asJsonObject
-            listOf("message", "error", "detail").firstNotNullOfOrNull { key ->
-                objectValue.get(key)
-                    ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }
-                    ?.asString
-                    ?.takeIf(String::isNotBlank)
-            }
-        }.getOrNull()
     }
 
     suspend fun getLocalUser(): User? = withContext(Dispatchers.IO) {
@@ -74,17 +37,20 @@ class CargoRepository(
         cargoDao.clearUser()
     }
 
+    suspend fun getLatestLocationFromLocal(): CourierLocation? = withContext(Dispatchers.IO) {
+        cargoDao.getLatestLocation()
+    }
+
     suspend fun updateCourierLocation(lat: Double, lng: Double): Result<Void?> = withContext(Dispatchers.IO) {
         try {
             val locationData = CourierLocation(latitude = lat, longitude = lng)
+            cargoDao.insertLocation(locationData)
             val response = apiService.updateLocation(locationData)
             if (response.isSuccessful) {
                 Result.success(null)
             } else {
                 Result.failure(Exception("Konum sunucuya gönderilemedi: ${response.message()}"))
             }
-        } catch (e: CancellationException) {
-            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -98,16 +64,14 @@ class CargoRepository(
             }
 
             val response = apiService.getRoutePrice(origin, destination)
-            val routePrices = response.body()
-            if (response.isSuccessful && !routePrices.isNullOrEmpty()) {
+            if (response.isSuccessful && !response.body().isNullOrEmpty()) {
+                val routePrices = response.body()!!
                 val routePrice = routePrices.first()
                 cargoDao.insertRoutePrices(routePrices)
                 Result.success(routePrice)
             } else {
                 Result.failure(Exception("Fiyat bilgisi alınamadı: ${response.message()}"))
             }
-        } catch (e: CancellationException) {
-            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -128,8 +92,6 @@ class CargoRepository(
                     Result.failure(Exception("Kargo bulunamadı: ${response.message()}"))
                 }
             }
-        } catch (e: CancellationException) {
-            throw e
         } catch (e: Exception) {
             val localLoad = cargoDao.getLoadById(loadId)
             if (localLoad != null) {
