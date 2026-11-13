@@ -22,7 +22,6 @@ class CourierDashboardFragment : Fragment() {
     private val binding get() = _binding!!
     private var isTrackingActive = false
 
-    // Ön konum ve bildirim izinleri onaylandığında tetiklenen mekanizma
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -30,24 +29,19 @@ class CourierDashboardFragment : Fragment() {
         val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
 
         if (fineLocationGranted || coarseLocationGranted) {
-            // Ön plan konum izinleri tamamsa, Android 10+ için arka plan iznini kontrol et
             checkBackgroundLocationPermission()
         } else {
             showToast("Kurye takibi için ön plan konum izni vermeniz zorunludur.")
         }
     }
 
-    // Android 10+ Arka Plan Konum İzin İstemcisi
     private val requestBackgroundPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            toggleLocationService()
-        } else {
-            // Arka plan izni reddedilse bile servis ön planda (Foreground) çalışmaya devam edebilir
+        if (!isGranted) {
             showToast("Arka plan konum izni verilmedi. Uygulama kapandığında takip kesilebilir.")
-            toggleLocationService()
         }
+        toggleLocationService()
     }
 
     override fun onCreateView(
@@ -59,18 +53,16 @@ class CourierDashboardFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, view: Bundle?) {
-        super.onViewCreated(view, view)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val currentLoadId = "TRK-98342"
         binding.textViewActiveLoadId.text = "Aktif Yük No: $currentLoadId"
 
-        // Canlı Konum Paylaşımı Başlatma / Durdurma Butonu
         binding.buttonToggleService.setOnClickListener {
             checkPermissionsAndToggle()
         }
 
-        // Yük Detayına Gitme / Canlı Haritada Görme Butonu
         binding.buttonViewLoadDetails.setOnClickListener {
             val action = CourierDashboardFragmentDirections
                 .actionCourierDashboardToLoadTracking(currentLoadId)
@@ -80,7 +72,6 @@ class CourierDashboardFragment : Fragment() {
 
     private fun checkPermissionsAndToggle() {
         if (isTrackingActive) {
-            // Servis zaten çalışıyorsa doğrudan durdurma aşamasına geç, izin isteme
             toggleLocationService()
             return
         }
@@ -89,8 +80,6 @@ class CourierDashboardFragment : Fragment() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-
-        // Android 13+ ise bildirim izni de foreground service için istenir
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -98,7 +87,6 @@ class CourierDashboardFragment : Fragment() {
         val missingPermissions = permissionsToRequest.filter {
             ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
         }
-
         if (missingPermissions.isEmpty()) {
             checkBackgroundLocationPermission()
         } else {
@@ -106,9 +94,6 @@ class CourierDashboardFragment : Fragment() {
         }
     }
 
-    /**
-     * Android 10 (API 29) ve sonrası için cihaz kilitliyken takip yeteneğini denetler
-     */
     private fun checkBackgroundLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val hasBackgroundPermission = ContextCompat.checkSelfPermission(
@@ -119,7 +104,6 @@ class CourierDashboardFragment : Fragment() {
             if (hasBackgroundPermission) {
                 toggleLocationService()
             } else {
-                // Google politikaları gereği arka plan izni ayrı bir istemle talep edilmelidir
                 requestBackgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             }
         } else {
@@ -128,22 +112,25 @@ class CourierDashboardFragment : Fragment() {
     }
 
     private fun toggleLocationService() {
-        val intent = Intent(requireContext(), LocationService::class.java)
+        val context = context ?: return
+        val intent = Intent(context, LocationService::class.java)
 
         if (!isTrackingActive) {
-            // Konum Servisini Başlat
-            ContextCompat.startForegroundService(requireContext(), intent)
+            ContextCompat.startForegroundService(context, intent)
             isTrackingActive = true
             binding.buttonToggleService.text = "Canlı Konum Paylaşımını Durdur"
-            binding.buttonToggleService.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+            binding.buttonToggleService.setBackgroundColor(
+                ContextCompat.getColor(context, android.R.color.holo_red_dark)
+            )
             binding.textViewServiceStatus.text = "Durum: Konumunuz Canlı Paylaşılıyor"
             showToast("Arka plan kurye takip servisi başlatıldı.")
         } else {
-            // Konum Servisini Durdur
-            requireContext().stopService(intent)
+            context.stopService(intent)
             isTrackingActive = false
             binding.buttonToggleService.text = "Canlı Konum Paylaşımını Başlat"
-            binding.buttonToggleService.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+            binding.buttonToggleService.setBackgroundColor(
+                ContextCompat.getColor(context, android.R.color.holo_green_dark)
+            )
             binding.textViewServiceStatus.text = "Durum: Çevrimdışı"
             showToast("Kurye takip servisi durduruldu.")
         }
