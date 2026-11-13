@@ -35,8 +35,8 @@ class CustomerDashboardFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val simulatedPrice = (150..500).random()
-            binding.textViewPriceResult.text = "Tahmini Rota Fiyatı: $simulatedPrice TRY"
+            binding.textViewPriceResult.text = "Fiyat hesaplanıyor..."
+            showToast("Ağ bağlantısı kontrol ediliyor.")
         }
 
         binding.buttonTrackLoad.setOnClickListener {
