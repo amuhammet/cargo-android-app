@@ -30,8 +30,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val user = AppDatabase.getDatabase(applicationContext).cargoDao().LoggedInUser()
             if (user == null || user.role.uppercase(Locale.ROOT) !in setOf("CUSTOMER", "COURIER")) {
-                startActivity(Intent(this@MainActivity, CustomerLoginActivity::class.java))
-                finish()
+                routeToLogin()
                 return@launch
             }
             showDashboard(user)
@@ -54,13 +53,25 @@ class MainActivity : AppCompatActivity() {
         navController.graph = graph
 
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.customerDashboardFragment, R.id.courierDashboardFragment)
+            setOf(R.id.customerDashboardFragment, R.id.courierDashboardFragment),
+            binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
     }
 
+    private fun routeToLogin() {
+        val intent = Intent(this, CustomerLoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
+    }
+
     override fun onSupportNavigateUp(): Boolean {
-        return ::navController.isInitialized &&
-            (navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp())
+        return if (::navController.isInitialized) {
+            navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        } else {
+            super.onSupportNavigateUp()
+        }
     }
 }

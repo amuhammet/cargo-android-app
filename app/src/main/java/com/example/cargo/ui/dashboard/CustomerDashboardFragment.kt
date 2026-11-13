@@ -27,8 +27,8 @@ class CustomerDashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.buttonCalculatePrice.setOnClickListener {
-            val origin = binding.editTextOrigin.text.toString().trim()
-            val destination = binding.editTextDestination.text.toString().trim()
+            val origin = binding.editTextOrigin.text?.toString()?.trim().orEmpty()
+            val destination = binding.editTextDestination.text?.toString()?.trim().orEmpty()
 
             if (origin.isEmpty() || destination.isEmpty()) {
                 showToast("Lütfen kalkış ve varış noktalarını doldurun.")
@@ -40,7 +40,7 @@ class CustomerDashboardFragment : Fragment() {
         }
 
         binding.buttonTrackLoad.setOnClickListener {
-            val trackingId = binding.editTextTrackingId.text.toString().trim()
+            val trackingId = binding.editTextTrackingId.text?.toString()?.trim().orEmpty()
 
             if (trackingId.isEmpty()) {
                 showToast("Lütfen geçerli bir takip numarası girin.")
