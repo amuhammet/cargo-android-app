@@ -38,10 +38,11 @@ class CourierDashboardFragment : Fragment() {
     private val requestBackgroundPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (!isGranted) {
+        if (isGranted) {
+            toggleLocationService()
+        } else {
             showToast("Arka plan konum izni verilmedi. Uygulama kapandığında takip kesilebilir.")
         }
-        toggleLocationService()
     }
 
     override fun onCreateView(
@@ -80,6 +81,7 @@ class CourierDashboardFragment : Fragment() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -87,6 +89,7 @@ class CourierDashboardFragment : Fragment() {
         val missingPermissions = permissionsToRequest.filter {
             ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
         }
+
         if (missingPermissions.isEmpty()) {
             checkBackgroundLocationPermission()
         } else {

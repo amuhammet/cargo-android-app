@@ -1,16 +1,19 @@
 package com.example.cargo.service
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.example.cargo.data.local.AppDatabase
 import com.example.cargo.data.repository.CargoRepository
 import com.example.cargo.network.RetrofitClient
@@ -27,8 +30,7 @@ class LocationService : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private lateinit var repository: CargoRepository
-    
-    // Bellek sızıntılarını önlemek için SupervisorJob ile güvenli scope tanımı
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     companion object {
@@ -40,12 +42,10 @@ class LocationService : Service() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        
-        // Veritabanı ve Repository bağımlılıklarının başlatılması
+
         val database = AppDatabase.getDatabase(applicationContext)
         repository = CargoRepository(RetrofitClient.apiService, database.cargoDao())
 
-        // GPS sinyali değiştikçe tetiklenen geri çağırım mekanizması
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
@@ -59,8 +59,14 @@ class LocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (!hasLocationPermission()) {
+            Log.w(TAG, "Konum izinleri eksik, servis başlatılamadı.")
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         createNotificationChannel()
-        
+
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Kargo Takip Sistemi")
             .setContentText("Kurye konumunuz canlı olarak güncelleniyor...")
@@ -69,11 +75,10 @@ class LocationService : Service() {
             .setOngoing(true)
             .build()
 
-        // Android 14+ cihazlarda arka plan konum izni çökmesini engellemek için tip belirtimi şarttır
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
-                NOTIFICATION_ID, 
-                notification, 
+                NOTIFICATION_ID,
+                notification,
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             )
         } else {
@@ -81,11 +86,22 @@ class LocationService : Service() {
         }
 
         startLocationUpdates()
-
         return START_STICKY
     }
 
+    private fun hasLocationPermission(): Boolean {
+        val fine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+        return fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED
+    }
+
     private fun startLocationUpdates() {
+        if (!hasLocationPermission()) {
+            Log.w(TAG, "Konum güncellemeleri başlatılamadı: izin yok.")
+            stopSelf()
+            return
+        }
+
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, TimeUnit.SECONDS.toMillis(10))
             .setMinUpdateIntervalMillis(TimeUnit.SECONDS.toMillis(5))
             .build()
@@ -98,17 +114,17 @@ class LocationService : Service() {
             )
         } catch (unlikely: SecurityException) {
             Log.e(TAG, "Konum izinleri eksik, takip başlatılamadı: $unlikely")
+            stopSelf()
         }
     }
 
     private fun sendLocationToServer(lat: Double, lng: Double) {
-        // Ağ isteğini ana arayüzü kilitlememesi için IO thread havuzunda koşturuyoruz
         serviceScope.launch {
             try {
                 repository.updateCourierLocation(lat, lng).onSuccess {
                     Log.d(TAG, "Koordinatlar API sunucusuna başarıyla basıldı.")
-                }.onFailure { istisna ->
-                    Log.e(TAG, "Koordinat basılırken ağ hatası meydana geldi: ${istisna.localizedMessage}")
+                }.onFailure { exception ->
+                    Log.e(TAG, "Koordinat basılırken ağ hatası meydana geldi: ${exception.localizedMessage}")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "İşlem sırasında beklenmedik bir hata oluştu: ${e.message}")
@@ -130,12 +146,12 @@ class LocationService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-        serviceScope.cancel() // Servis durduğunda arka plandaki tüm asenkron istekleri güvenle iptal eder
+        if (this::fusedLocationClient.isInitialized && this::locationCallback.isInitialized) {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+        serviceScope.cancel()
         Log.d(TAG, "Arka plan izleme servisi kapatıldı.")
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
+    override fun onBind(intent: Intent?): IBinder? = null
 }
