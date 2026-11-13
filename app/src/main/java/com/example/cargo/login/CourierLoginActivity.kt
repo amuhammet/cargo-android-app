@@ -33,10 +33,12 @@ class CourierLoginActivity : AppCompatActivity() {
 
             if (!email.isValidEmail()) {
                 binding.inputLayoutCourierEmail.error = "Geçerli bir e-posta girin."
+                binding.editTextCourierEmail.requestFocus()
                 return@setOnClickListener
             }
             if (password.isBlank()) {
                 binding.inputLayoutCourierPassword.error = "Şifre boş olamaz."
+                binding.editTextCourierPassword.requestFocus()
                 return@setOnClickListener
             }
 
@@ -49,7 +51,8 @@ class CourierLoginActivity : AppCompatActivity() {
                         startActivity(Intent(this@CourierLoginActivity, MainActivity::class.java))
                         finish()
                     }.onFailure { error ->
-                        showToast(error.message ?: "Giriş yapılamadı. Sunucu bağlantınızı kontrol edin.")
+                        val errorMessage = error.message ?: "Giriş yapılamadı. Sunucu bağlantınızı kontrol edin."
+                        showToast(errorMessage)
                     }
                 } finally {
                     if (!isFinishing) setLoading(false)

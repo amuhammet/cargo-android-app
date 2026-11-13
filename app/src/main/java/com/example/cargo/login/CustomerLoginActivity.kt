@@ -33,10 +33,12 @@ class CustomerLoginActivity : AppCompatActivity() {
 
             if (!email.isValidEmail()) {
                 binding.inputLayoutCustomerEmail.error = "Geçerli bir e-posta girin."
+                binding.editTextCustomerEmail.requestFocus()
                 return@setOnClickListener
             }
             if (password.isBlank()) {
                 binding.inputLayoutCustomerPassword.error = "Şifre boş olamaz."
+                binding.editTextCustomerPassword.requestFocus()
                 return@setOnClickListener
             }
 
@@ -49,7 +51,8 @@ class CustomerLoginActivity : AppCompatActivity() {
                         startActivity(Intent(this@CustomerLoginActivity, MainActivity::class.java))
                         finish()
                     }.onFailure { error ->
-                        showToast(error.message ?: "Giriş yapılamadı. Sunucu bağlantınızı kontrol edin.")
+                        val errorMessage = error.message ?: "Giriş yapılamadı. Sunucu bağlantınızı kontrol edin."
+                        showToast(errorMessage)
                     }
                 } finally {
                     if (!isFinishing) setLoading(false)
