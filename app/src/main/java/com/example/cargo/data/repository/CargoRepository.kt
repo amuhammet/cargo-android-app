@@ -29,6 +29,16 @@ class CargoRepository(
         }
     }
 
+    suspend fun login(email: String, password: String, role: String): Result<User> {
+        return login(
+            mapOf(
+                "email" to email,
+                "password" to password,
+                "role" to role
+            )
+        )
+    }
+
     suspend fun getLocalUser(): User? = withContext(Dispatchers.IO) {
         cargoDao.LoggedInUser()
     }
